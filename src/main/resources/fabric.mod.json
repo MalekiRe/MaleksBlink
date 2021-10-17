@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "modid",
+  "id": "maleks_blink",
   "version": "${version}",
 
   "name": "Example Mod",
@@ -14,16 +14,19 @@
   },
 
   "license": "CC0-1.0",
-  "icon": "assets/modid/icon.png",
+  "icon": "assets/maleks_blink/Blink.png",
 
   "environment": "*",
   "entrypoints": {
     "main": [
-      "net.fabricmc.example.ExampleMod"
+      "net.malek.blink.ModInit"
+    ],
+    "client": [
+      "net.malek.blink.ClientModInit"
     ]
   },
   "mixins": [
-    "modid.mixins.json"
+    "maleks_blink.mixins.json"
   ],
 
   "depends": {

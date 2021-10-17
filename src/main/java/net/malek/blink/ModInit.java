@@ -1,0 +1,101 @@
+package net.malek.blink;
+
+import me.shedaniel.autoconfig.AutoConfig;
+import me.shedaniel.autoconfig.ConfigHolder;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.block.Blocks;
+import net.minecraft.enchantment.Enchantment;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.HitResult;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.registry.Registry;
+import net.minecraft.world.World;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.function.Supplier;
+
+public class ModInit implements ModInitializer {
+	// This logger is used to write text to the console and the log file.
+	// It is considered best practice to use your mod id as the logger's name.
+	// That way, it's clear which mod wrote info, warnings, and errors.
+	public static final Logger LOGGER = LogManager.getLogger("modid");
+	public static final String MOD_ID = "maleks_blink";
+	private static final Supplier<Path> CONFIG_ROOT = () -> FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).toAbsolutePath();
+	private static final ConfigHolder<ModConfig> CONFIG_MANAGER = AutoConfig.register(ModConfig.class, ModConfig.SubRootJanksonConfigSerializer::new);
+	public static final Identifier TELEPORT_PACKET = new Identifier("blink:teleport");
+	public static HashMap<UUID, Float> timeoutMap = new HashMap<>();
+	public static int TIME = 100;
+	private static Enchantment BLINK = Registry.register(Registry.ENCHANTMENT, new Identifier("maleks_blink", "blink"), new BlinkEnchantment());
+	@Override
+	public void onInitialize() {
+		// This code runs as soon as Minecraft is in a mod-load-ready state.
+		// However, some things (like resources) may still be uninitialized.
+		// Proceed with mild caution.
+		ServerPlayNetworking.registerGlobalReceiver(TELEPORT_PACKET, (server, player, handler, buf, responseSender) -> {
+			int distanceIncreaseAmount = 0;
+			for (int i = 0; i < player.getInventory().armor.size(); i++) {
+				ItemStack stack = player.getInventory().armor.get(i);
+				if (stack.hasEnchantments()) {
+					for (int i2 = 0; i2 < stack.getEnchantments().size(); i2++) {
+
+						NbtCompound compound = (NbtCompound)stack.getEnchantments().get(i2);
+						System.out.println(compound);
+						if(compound.getString("id").equals("maleks_blink:blink")) {
+							distanceIncreaseAmount += compound.getInt("lvl");
+						}
+						System.out.println(distanceIncreaseAmount);
+					}
+				}
+			}
+			if(timeoutMap.get(player.getUuid()) == null || timeoutMap.get(player.getUuid()) + (TIME/distanceIncreaseAmount) < server.getTicks()) {
+				if (getConfig().madness.needsEnchantment == false) {
+					HitResult hitResult = player.raycast(750, 0.0f, false);
+					World world = player.getServerWorld();
+					for (BlockPos pos : BlockPos.iterateOutwards(new BlockPos(hitResult.getPos()), 4, 4, 4)) {
+						if (world.isAir(pos) && world.isAir(pos.up())) {
+							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
+							player.teleport(pos.getX(), pos.getY(), pos.getZ());
+							timeoutMap.put(player.getUuid(), (float) server.getTicks());
+							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
+							break;
+						}
+					}
+				} else {
+					if(distanceIncreaseAmount == 0) {
+						return;
+					}
+					HitResult hitResult = player.raycast(distanceIncreaseAmount*8, 0.0f, false);
+					World world = player.getServerWorld();
+					for (BlockPos pos : BlockPos.iterateOutwards(new BlockPos(hitResult.getPos()), 4, 4, 4)) {
+						if (world.isAir(pos) && world.isAir(pos.up())) {
+							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
+							player.teleport(pos.getX(), pos.getY(), pos.getZ());
+							timeoutMap.put(player.getUuid(), (float) server.getTicks());
+							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
+							break;
+						}
+					}
+				}
+			}
+			//LOGGER.info(server.getTicks());
+		});
+
+	}
+	public static ModConfig getConfig() {
+		return CONFIG_MANAGER.get();
+	}
+	public static Path getConfigRoot() {
+		return CONFIG_ROOT.get();
+	}
+}
