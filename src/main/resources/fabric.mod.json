@@ -3,17 +3,16 @@
   "id": "maleks_blink",
   "version": "${version}",
 
-  "name": "Example Mod",
-  "description": "This is an example description! Tell everyone what your mod is about!",
+  "name": "Maleks Blink",
+  "description": "Blink around like an enderman!",
   "authors": [
-    "Me!"
+    "MalekiRe"
   ],
   "contact": {
-    "homepage": "https://fabricmc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "discord": "Invite Link : https://discord.gg/b6UWfp4PUv"
   },
 
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/maleks_blink/Blink.png",
 
   "environment": "*",

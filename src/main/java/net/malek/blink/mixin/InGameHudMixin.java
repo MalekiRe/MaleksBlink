@@ -1,0 +1,63 @@
+package net.malek.blink.mixin;
+
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.font.TextRenderer;
+import net.minecraft.client.gui.DrawableHelper;
+import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.render.*;
+import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.TranslatableText;
+import net.minecraft.util.Identifier;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+@Environment(EnvType.CLIENT)
+@Mixin(InGameHud.class)
+public abstract class InGameHudMixin extends DrawableHelper {
+    /**
+     * @author - MalekiRe
+     */
+//    private static final Identifier TFC_GUI_ICONS_TEXTURE = new Identifier(TerraFabriCraft.MODID, "textures/gui/icons/overlay.png");
+//    private static final Identifier EMPTY_GUI_ICONS_TEXTURE = new Identifier(TerraFabriCraft.MODID, "textures/gui/icons/empty.png");
+    private static final Identifier ENDERPEARL_TEXTURE = new Identifier("minecraft:textures/item/ender_pearl.png");
+    @Shadow
+    protected abstract PlayerEntity getCameraPlayer();
+
+    @Shadow
+    private int scaledHeight;
+
+    @Shadow
+    private int scaledWidth;
+
+
+    @Inject(method = "renderStatusBars", at = @At(value = "INVOKE", shift = At.Shift.AFTER, ordinal = 1, target = "Lnet/minecraft/client/MinecraftClient;getProfiler()Lnet/minecraft/util/profiler/Profiler;"))
+    private void renderPre(MatrixStack matrices, CallbackInfo callbackInfo) {
+        PlayerEntity player = getCameraPlayer();
+        RenderSystem.setShaderTexture(0, ENDERPEARL_TEXTURE);
+        System.out.println("dfjskaf");
+        drawTexture(matrices, scaledWidth / 2 + 1, scaledHeight - 40, 0, 10, 90, 90);
+//        RenderSystem.setShaderTexture(0, ENDERPEARL_TEXTURE);
+//        drawHunger(matrices, player, scaledWidth / 2 + 1, scaledHeight - 40);
+//        drawThirst(matrices, player, scaledWidth / 2 + 1, scaledHeight - 35);
+//        drawHealth(matrices, player, scaledWidth / 2 - 91, scaledHeight - 40);
+//        RenderSystem.setShaderTexture(0, EMPTY_GUI_ICONS_TEXTURE);
+    }
+
+
+    //Rebind vanilla GUI textures after Health and Hunger has been removed
+    @Inject(method = "renderStatusBars", at = @At(value = "INVOKE", shift = At.Shift.AFTER, ordinal = 3, target = "Lnet/minecraft/client/MinecraftClient;getProfiler()Lnet/minecraft/util/profiler/Profiler;"))
+    private void renderPost(MatrixStack matrices, CallbackInfo callbackInfo) {
+        System.out.println("SJDFKSDJFKSDF");
+        RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
+    }
+
+
+}

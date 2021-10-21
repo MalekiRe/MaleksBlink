@@ -35,7 +35,7 @@ public class ModInit implements ModInitializer {
 	private static final ConfigHolder<ModConfig> CONFIG_MANAGER = AutoConfig.register(ModConfig.class, ModConfig.SubRootJanksonConfigSerializer::new);
 	public static final Identifier TELEPORT_PACKET = new Identifier("blink:teleport");
 	public static HashMap<UUID, Float> timeoutMap = new HashMap<>();
-	public static int TIME = 100;
+	public static int TIME = getConfig().madness.defaultTime;
 	private static Enchantment BLINK = Registry.register(Registry.ENCHANTMENT, new Identifier("maleks_blink", "blink"), new BlinkEnchantment());
 	@Override
 	public void onInitialize() {
@@ -50,20 +50,20 @@ public class ModInit implements ModInitializer {
 					for (int i2 = 0; i2 < stack.getEnchantments().size(); i2++) {
 
 						NbtCompound compound = (NbtCompound)stack.getEnchantments().get(i2);
-						System.out.println(compound);
+						//System.out.println(compound);
 						if(compound.getString("id").equals("maleks_blink:blink")) {
 							distanceIncreaseAmount += compound.getInt("lvl");
 						}
-						System.out.println(distanceIncreaseAmount);
+						//System.out.println(distanceIncreaseAmount);
 					}
 				}
 			}
-			if(timeoutMap.get(player.getUuid()) == null || timeoutMap.get(player.getUuid()) + (TIME/distanceIncreaseAmount) < server.getTicks()) {
+			if(timeoutMap.get(player.getUuid()) == null || timeoutMap.get(player.getUuid()) + (TIME/(distanceIncreaseAmount+1)) < server.getTicks()) {
 				if (getConfig().madness.needsEnchantment == false) {
 					HitResult hitResult = player.raycast(750, 0.0f, false);
 					World world = player.getServerWorld();
 					for (BlockPos pos : BlockPos.iterateOutwards(new BlockPos(hitResult.getPos()), 4, 4, 4)) {
-						if (world.isAir(pos) && world.isAir(pos.up())) {
+						if (world.isAir(pos) && world.isAir(pos.up()) && !world.isAir(new BlockPos(player.raycast(751, 0.0f, false).getPos()))) {
 							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
 							player.teleport(pos.getX(), pos.getY(), pos.getZ());
 							timeoutMap.put(player.getUuid(), (float) server.getTicks());
@@ -78,7 +78,7 @@ public class ModInit implements ModInitializer {
 					HitResult hitResult = player.raycast(distanceIncreaseAmount*8, 0.0f, false);
 					World world = player.getServerWorld();
 					for (BlockPos pos : BlockPos.iterateOutwards(new BlockPos(hitResult.getPos()), 4, 4, 4)) {
-						if (world.isAir(pos) && world.isAir(pos.up())) {
+						if (world.isAir(pos) && world.isAir(pos.up()) /*&& !world.isAir(new BlockPos(player.raycast(distanceIncreaseAmount*8 + 1, 0.0f, false).getPos()*/) {
 							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
 							player.teleport(pos.getX(), pos.getY(), pos.getZ());
 							timeoutMap.put(player.getUuid(), (float) server.getTicks());
