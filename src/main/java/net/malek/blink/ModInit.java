@@ -3,12 +3,14 @@ package net.malek.blink;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigHolder;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.block.Blocks;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.network.PacketByteBuf;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -34,6 +36,7 @@ public class ModInit implements ModInitializer {
 	private static final Supplier<Path> CONFIG_ROOT = () -> FabricLoader.getInstance().getConfigDir().resolve(MOD_ID).toAbsolutePath();
 	private static final ConfigHolder<ModConfig> CONFIG_MANAGER = AutoConfig.register(ModConfig.class, ModConfig.SubRootJanksonConfigSerializer::new);
 	public static final Identifier TELEPORT_PACKET = new Identifier("blink:teleport");
+	public static final Identifier RENDER_PACKET = new Identifier("blink:render");
 	public static HashMap<UUID, Float> timeoutMap = new HashMap<>();
 	public static int TIME = getConfig().madness.defaultTime;
 	private static Enchantment BLINK = Registry.register(Registry.ENCHANTMENT, new Identifier("maleks_blink", "blink"), new BlinkEnchantment());
@@ -68,6 +71,12 @@ public class ModInit implements ModInitializer {
 							player.teleport(pos.getX(), pos.getY(), pos.getZ());
 							timeoutMap.put(player.getUuid(), (float) server.getTicks());
 							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
+							PacketByteBuf packetByteBufs = PacketByteBufs.create();
+							NbtCompound compound = new NbtCompound();
+							compound.putInt("distance", distanceIncreaseAmount);
+							compound.putInt("time", TIME);
+							packetByteBufs.writeNbt(compound);
+							ServerPlayNetworking.send(player, new Identifier("blink:render"), packetByteBufs);
 							break;
 						}
 					}
@@ -83,6 +92,12 @@ public class ModInit implements ModInitializer {
 							player.teleport(pos.getX(), pos.getY(), pos.getZ());
 							timeoutMap.put(player.getUuid(), (float) server.getTicks());
 							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
+							PacketByteBuf packetByteBufs = PacketByteBufs.create();
+							NbtCompound compound = new NbtCompound();
+							compound.putInt("distance", distanceIncreaseAmount);
+							compound.putInt("time", TIME);
+							packetByteBufs.writeNbt(compound);
+							ServerPlayNetworking.send(player, new Identifier("blink:render"), packetByteBufs);
 							break;
 						}
 					}
