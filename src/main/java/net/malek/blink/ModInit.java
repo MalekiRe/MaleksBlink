@@ -39,6 +39,8 @@ public class ModInit implements ModInitializer {
 	public static final Identifier RENDER_PACKET = new Identifier("blink:render");
 	public static HashMap<UUID, Float> timeoutMap = new HashMap<>();
 	public static int TIME = getConfig().madness.defaultTime;
+	public static int TIME_LAST_ARMOR_CHECK = 0;
+	public static int distanceIncreaseAmount = 10;
 	private static Enchantment BLINK = Registry.register(Registry.ENCHANTMENT, new Identifier("maleks_blink", "blink"), new BlinkEnchantment());
 	@Override
 	public void onInitialize() {
@@ -46,27 +48,31 @@ public class ModInit implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 		ServerPlayNetworking.registerGlobalReceiver(TELEPORT_PACKET, (server, player, handler, buf, responseSender) -> {
-			int distanceIncreaseAmount = 0;
-			for (int i = 0; i < player.getInventory().armor.size(); i++) {
-				ItemStack stack = player.getInventory().armor.get(i);
-				if (stack.hasEnchantments()) {
-					for (int i2 = 0; i2 < stack.getEnchantments().size(); i2++) {
-
-						NbtCompound compound = (NbtCompound)stack.getEnchantments().get(i2);
-						//System.out.println(compound);
-						if(compound.getString("id").equals("maleks_blink:blink")) {
-							distanceIncreaseAmount += compound.getInt("lvl");
+			server.execute(() -> {
+				if(getConfig().madness.needsEnchantment) {
+					if (TIME_LAST_ARMOR_CHECK + 10000 < server.getTicks()) {
+						TIME_LAST_ARMOR_CHECK = server.getTicks();
+						int distanceIncreaseAmount1 = 0;
+						for (int i = 0; i < player.getInventory().armor.size(); i++) {
+							ItemStack stack = player.getInventory().armor.get(i);
+							if (stack.hasEnchantments()) {
+								for (int i2 = 0; i2 < stack.getEnchantments().size(); i2++) {
+									NbtCompound compound = (NbtCompound) stack.getEnchantments().get(i2);
+									if (compound.getString("id").equals("maleks_blink:blink")) {
+										distanceIncreaseAmount1 += compound.getInt("lvl");
+									}
+								}
+							}
 						}
-						//System.out.println(distanceIncreaseAmount);
+						distanceIncreaseAmount = distanceIncreaseAmount1;
 					}
 				}
-			}
 			if(timeoutMap.get(player.getUuid()) == null || timeoutMap.get(player.getUuid()) + (TIME/(distanceIncreaseAmount+1)) < server.getTicks()) {
-				if (getConfig().madness.needsEnchantment == false) {
-					HitResult hitResult = player.raycast(750, 0.0f, false);
-					World world = player.getServerWorld();
+				if (!getConfig().madness.needsEnchantment) {
+					HitResult hitResult = player.raycast(125, 0.0f, false);
+					World world = player.getWorld();
 					for (BlockPos pos : BlockPos.iterateOutwards(new BlockPos(hitResult.getPos()), 4, 4, 4)) {
-						if (world.isAir(pos) && world.isAir(pos.up()) && !world.isAir(new BlockPos(player.raycast(751, 0.0f, false).getPos()))) {
+						if (world.isAir(pos) && world.isAir(pos.up())) {
 							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
 							player.teleport(pos.getX(), pos.getY(), pos.getZ());
 							timeoutMap.put(player.getUuid(), (float) server.getTicks());
@@ -76,8 +82,8 @@ public class ModInit implements ModInitializer {
 							compound.putInt("distance", distanceIncreaseAmount);
 							compound.putInt("time", TIME);
 							packetByteBufs.writeNbt(compound);
-							ServerPlayNetworking.send(player, new Identifier("blink:render"), packetByteBufs);
-							break;
+							ServerPlayNetworking.send(player, RENDER_PACKET, packetByteBufs);
+							return;
 						}
 					}
 				} else {
@@ -85,7 +91,7 @@ public class ModInit implements ModInitializer {
 						return;
 					}
 					HitResult hitResult = player.raycast(distanceIncreaseAmount*8, 0.0f, false);
-					World world = player.getServerWorld();
+					World world = player.getWorld();
 					for (BlockPos pos : BlockPos.iterateOutwards(new BlockPos(hitResult.getPos()), 4, 4, 4)) {
 						if (world.isAir(pos) && world.isAir(pos.up()) /*&& !world.isAir(new BlockPos(player.raycast(distanceIncreaseAmount*8 + 1, 0.0f, false).getPos()*/) {
 							world.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ENTITY_ENDERMAN_TELEPORT, SoundCategory.PLAYERS, 1f, 1f);
@@ -97,12 +103,13 @@ public class ModInit implements ModInitializer {
 							compound.putInt("distance", distanceIncreaseAmount);
 							compound.putInt("time", TIME);
 							packetByteBufs.writeNbt(compound);
-							ServerPlayNetworking.send(player, new Identifier("blink:render"), packetByteBufs);
-							break;
+							ServerPlayNetworking.send(player, RENDER_PACKET, packetByteBufs);
+							return;
 						}
 					}
 				}
 			}
+			});
 			//LOGGER.info(server.getTicks());
 		});
 

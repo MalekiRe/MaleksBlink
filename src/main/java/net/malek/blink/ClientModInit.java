@@ -28,24 +28,27 @@ public class ClientModInit implements ClientModInitializer {
     public static int renderTime = -1;
     public static int distance = 1;
     public static int TIME = 1;
+    public static int delayForKeyBinding = 0;
+    public static int DELAY = 30;
     @Override
     public void onInitializeClient() {
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             while (keyBinding.wasPressed()) {
-                ClientPlayNetworking.send(ModInit.TELEPORT_PACKET, PacketByteBufs.empty());
+                    ClientPlayNetworking.send(ModInit.TELEPORT_PACKET, PacketByteBufs.empty());
+
                 //client.player.sendMessage(new LiteralText("Key 1 was pressed!"), false);
             }
         });
         ClientPlayNetworking.registerGlobalReceiver(new Identifier("blink:render"), (client, handler, buf, responseSender) -> {
 
-                System.out.println("SDJFKSDFJSDFSDJ");
+               // System.out.println("SDJFKSDFJSDFSDJ");
                 NbtCompound nbtCompound = buf.readNbt();
                 distance = nbtCompound.getInt("distance");
                 TIME = nbtCompound.getInt("time");
                 renderTime = 0;
-                System.out.println("distance : " + distance);
-                System.out.println("time : " + TIME);
-                System.out.println("renderTime : " + renderTime);
+//                System.out.println("distance : " + distance);
+//                System.out.println("time : " + TIME);
+//                System.out.println("renderTime : " + renderTime);
 
         });
     }
