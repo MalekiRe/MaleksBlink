@@ -40,7 +40,7 @@ public class ModInit implements ModInitializer {
 	public static HashMap<UUID, Float> timeoutMap = new HashMap<>();
 	public static int TIME = getConfig().madness.defaultTime;
 	public static int TIME_LAST_ARMOR_CHECK = 0;
-	public static int distanceIncreaseAmount = 10;
+	public static int distanceIncreaseAmount = 0;
 	private static Enchantment BLINK = Registry.register(Registry.ENCHANTMENT, new Identifier("maleks_blink", "blink"), new BlinkEnchantment());
 	@Override
 	public void onInitialize() {
@@ -50,8 +50,8 @@ public class ModInit implements ModInitializer {
 		ServerPlayNetworking.registerGlobalReceiver(TELEPORT_PACKET, (server, player, handler, buf, responseSender) -> {
 			server.execute(() -> {
 				if(getConfig().madness.needsEnchantment) {
-					if (TIME_LAST_ARMOR_CHECK + 10000 < server.getTicks()) {
-						TIME_LAST_ARMOR_CHECK = server.getTicks();
+					if (/*TIME_LAST_ARMOR_CHECK + 1000 < server.getTicks()*/ true) {
+						//TIME_LAST_ARMOR_CHECK = server.getTicks();
 						int distanceIncreaseAmount1 = 0;
 						for (int i = 0; i < player.getInventory().armor.size(); i++) {
 							ItemStack stack = player.getInventory().armor.get(i);

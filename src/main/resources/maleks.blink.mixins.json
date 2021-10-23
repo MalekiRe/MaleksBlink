@@ -4,6 +4,7 @@
   "package": "net.malek.blink.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
+    "ServerWorldMixin"
   ],
   "client": [
     "InGameHudMixin"

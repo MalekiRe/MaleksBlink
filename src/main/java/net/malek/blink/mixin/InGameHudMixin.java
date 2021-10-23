@@ -63,10 +63,8 @@ public abstract class InGameHudMixin extends DrawableHelper {
         if(ClientModInit.renderTime >= 0) {
             currentLeavingTicks = -1;
             int numberOfTicks = ClientModInit.TIME/(ClientModInit.distance+1);
-
             i = (float)ClientModInit.renderTime / (float)numberOfTicks;
             i /= 3.0;
-            System.out.println("i : " + i);
             ClientModInit.renderTime++;
         }
         if(i >= 1) {
