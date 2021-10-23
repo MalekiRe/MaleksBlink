@@ -60,12 +60,10 @@ public abstract class InGameHudMixin extends DrawableHelper {
         if(currentLeavingTicks >= ticksToLeaveIt) {
             currentLeavingTicks = -2;
         }
-        //System.out.println(ClientModInit.renderTime);
         if(ClientModInit.renderTime >= 0) {
             currentLeavingTicks = -1;
             int numberOfTicks = ClientModInit.TIME/(ClientModInit.distance+1);
-            System.out.println("number of ticks : " + numberOfTicks);
-            System.out.println("renderTime : " + ClientModInit.renderTime);
+
             i = (float)ClientModInit.renderTime / (float)numberOfTicks;
             i /= 3.0;
             System.out.println("i : " + i);
@@ -76,21 +74,11 @@ public abstract class InGameHudMixin extends DrawableHelper {
             ClientModInit.renderTime = -1;
             currentLeavingTicks = 0;
         }
-        //RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
-//        RenderSystem.setShaderTexture(0, ENDERPEARL_TEXTURE);
-//        drawHunger(matrices, player, scaledWidth / 2 + 1, scaledHeight - 40);
-//        drawThirst(matrices, player, scaledWidth / 2 + 1, scaledHeight - 35);
-//        drawHealth(matrices, player, scaledWidth / 2 - 91, scaledHeight - 40);
-//        RenderSystem.setShaderTexture(0, EMPTY_GUI_ICONS_TEXTURE);
+
     }
 
 
-    //Rebind vanilla GUI textures after Health and Hunger has been removed
-//    @Inject(method = "renderStatusBars", at = @At(value = "INVOKE", shift = At.Shift.AFTER, ordinal = 3, target = "Lnet/minecraft/client/MinecraftClient;getProfiler()Lnet/minecraft/util/profiler/Profiler;"))
-//    private void renderPost(MatrixStack matrices, CallbackInfo callbackInfo) {
-//        System.out.println("SJDFKSDJFKSDF");
-//        RenderSystem.setShaderTexture(0, GUI_ICONS_TEXTURE);
-//    }
+
 
 
 }
